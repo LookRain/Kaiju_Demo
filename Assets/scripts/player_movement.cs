@@ -1,20 +1,33 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class player_movement : MonoBehaviour {
 
     Rigidbody2D rbody;
     Animator anim;
+    public Text guiltText;
+    public Text winText;
+    public Text loseText;
+    public Text timeText;
+
+    private bool isEnded;
+
+    public float timeRemaining = 60;
     public int currentGuilt, maxGuilt = 10;
     public int guiltTrigger1 = 4;
     public int guiltTrigger2 = 8;
     public int speed = 10;
-    public GameObject ruin1, ruin2, ruin3, ruin4, ruin5, ruin6, ruin7, ruin8, ruin9, ruin10;
+    public GameObject ruin1, ruin2, ruin3, ruin4, ruin5, ruin6, ruin7, ruin8, ruin9, ruin10,
+        ruin11, ruin12, ruin13, ruin14, ruin15, ruin16, ruin17, ruin18, ruin19, ruin20;
     private Vector2 vectorforobject;
-    public ArrayList ruinList = new ArrayList();
-    public string[] triggerList = new string[] { "building_trig_1", "building_trig_2", "building_trig_3",
+    private ArrayList ruinList = new ArrayList();
+    private string[] triggerList = new string[] { "building_trig_1", "building_trig_2", "building_trig_3",
     "building_trig_4","building_trig_5","building_trig_6","building_trig_7","building_trig_8","building_trig_9",
-        "building_trig_10" };
+        "building_trig_10", "building_trig_11", "building_trig_12", "building_trig_13",
+    "building_trig_14","building_trig_15","building_trig_16","building_trig_17","building_trig_18","building_trig_19",
+        "building_trig_20" };
     public int playerState;
     public int speedState;
 
@@ -24,6 +37,8 @@ public class player_movement : MonoBehaviour {
     void Start () {
         rbody = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        setGuiltText();
+        isEnded = false;
 
         currentGuilt = 0;
         playerState = 0;
@@ -39,10 +54,29 @@ public class player_movement : MonoBehaviour {
         ruinList.Add(ruin8);
         ruinList.Add(ruin9);
         ruinList.Add(ruin10);
+        ruinList.Add(ruin11);
+        ruinList.Add(ruin12);
+        ruinList.Add(ruin13);
+        ruinList.Add(ruin14);
+        ruinList.Add(ruin15);
+        ruinList.Add(ruin16);
+        ruinList.Add(ruin17);
+        ruinList.Add(ruin18);
+        ruinList.Add(ruin19);
+        ruinList.Add(ruin20);
         // ruinList.Add(ruin);
-        
+        winText.text = "";
+        loseText.text = "";
+        timeText.text = "Time Remaining: " + Mathf.Round(timeRemaining);
 
 
+    }
+
+    
+
+    void setGuiltText()
+    {
+        guiltText.text = "Guilt Level: " + currentGuilt + " / " + maxGuilt;
     }
     void CheckAndGrow()
     {
@@ -92,39 +126,71 @@ public class player_movement : MonoBehaviour {
     void OnTriggerEnter2D(Collider2D col)
     {
         
-        for (int i = 0; i < 10; i ++)
+        for (int i = 0; i < 20; i ++)
         {
             if (col.gameObject.tag == triggerList[i])
             {
+                Debug.Log("building collided: " + i);
                 currentGuilt++;
                 CheckAndGrow();
                 vectorforobject = col.transform.position;
                 GameObject ruinObject = (GameObject)ruinList[i];
                 Instantiate(ruinObject, vectorforobject, Quaternion.identity);
                 ruinObject.SetActive(true);
+                setGuiltText();
+                timeRemaining -= 5;
                 Destroy(col.gameObject);
                 Debug.Log(currentGuilt);
             }
 
             
         }
-        
+        if (col.gameObject.tag == "win_trig")
+        {
+            winText.text = "You Won!";
+            isEnded = true;
+        }
+
+
 
     }
 	
 	// Update is called once per frame
 	void Update () {
-        Vector2 movement_vector = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        if (movement_vector != Vector2.zero)
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.R))
         {
-            anim.SetBool("is_walking", true);
-            anim.SetFloat("input_x", movement_vector.x);
-            anim.SetFloat("input_y", movement_vector.y);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        timeRemaining -= Time.deltaTime;
+        if (timeRemaining > 0) {
+            timeText.text = "Time Remaining: " + Mathf.Round(timeRemaining);
         } else
         {
-            anim.SetBool("is_walking", false);
+            timeText.text = "Time Remaining: " + 0;
+        }
+        
+        if (currentGuilt >= maxGuilt || timeRemaining <= 0)
+        {
+            winText.text = "You Lost :(";
+            isEnded = true;
         }
 
-        rbody.MovePosition(rbody.position + movement_vector * Time.deltaTime* speed * 800);
+        if (!isEnded)
+        {
+
+            Vector2 movement_vector = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            if (movement_vector != Vector2.zero)
+            {
+                anim.SetBool("is_walking", true);
+                anim.SetFloat("input_x", movement_vector.x);
+                anim.SetFloat("input_y", movement_vector.y);
+            }
+            else
+            {
+                anim.SetBool("is_walking", false);
+            }
+
+            rbody.MovePosition(rbody.position + movement_vector * Time.deltaTime * speed * 800);
+        }
 	}
 }
