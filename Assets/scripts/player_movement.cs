@@ -11,13 +11,14 @@ public class player_movement : MonoBehaviour {
     public Text winText;
     public Text loseText;
     public Text timeText;
-
+    public CamearShake shaker;
     private bool isEnded;
-
+    public AudioSource collision_sound;
     public float timeRemaining = 60;
-    public int currentGuilt, maxGuilt = 10;
-    public int guiltTrigger1 = 4;
-    public int guiltTrigger2 = 8;
+    public int currentGuilt;
+    public int maxGuilt = 10;
+    public int guiltTrigger1 = 3;
+    public int guiltTrigger2 = 5;
     public int speed = 10;
     public GameObject ruin1, ruin2, ruin3, ruin4, ruin5, ruin6, ruin7, ruin8, ruin9, ruin10,
         ruin11, ruin12, ruin13, ruin14, ruin15, ruin16, ruin17, ruin18, ruin19, ruin20;
@@ -35,14 +36,17 @@ public class player_movement : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        rbody = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
-        setGuiltText();
-        isEnded = false;
-
         currentGuilt = 0;
         playerState = 0;
         speedState = 0;
+       
+        rbody = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+        setGuiltText();
+        Debug.Log(currentGuilt);
+        isEnded = false;
+
+       
 
         ruinList.Add(ruin1);
         ruinList.Add(ruin2);
@@ -76,7 +80,7 @@ public class player_movement : MonoBehaviour {
 
     void setGuiltText()
     {
-        guiltText.text = "Guilt Level: " + currentGuilt + " / " + maxGuilt;
+        guiltText.text = "Guilt Level: " + currentGuilt + "/" + maxGuilt;
     }
     void CheckAndGrow()
     {
@@ -115,40 +119,51 @@ public class player_movement : MonoBehaviour {
             }
             if (currentGuilt >= maxGuilt)
             {
-                //end game
+                
             }
         }
+        setGuiltText();
     }
-    void BuildingDestroy()
-    {
-
-    }
+   
+   
     void OnTriggerEnter2D(Collider2D col)
     {
-        
-        for (int i = 0; i < 20; i ++)
+        if (col.gameObject.tag.Contains("build"))
         {
-            if (col.gameObject.tag == triggerList[i])
+            this.shaker.Shake(0.5f);
+            collision_sound.Play();
+            for (int i = 0; i < 20; i++)
             {
-                Debug.Log("building collided: " + i);
-                currentGuilt++;
-                CheckAndGrow();
-                vectorforobject = col.transform.position;
-                GameObject ruinObject = (GameObject)ruinList[i];
-                Instantiate(ruinObject, vectorforobject, Quaternion.identity);
-                ruinObject.SetActive(true);
-                setGuiltText();
-                timeRemaining -= 5;
-                Destroy(col.gameObject);
-                Debug.Log(currentGuilt);
-            }
+                if (col.gameObject.tag == triggerList[i])
+                {
+                    Debug.Log("building collided: " + i);
+                    currentGuilt++;
 
-            
+                    vectorforobject = col.transform.position;
+                    GameObject ruinObject = (GameObject)ruinList[i];
+                    Instantiate(ruinObject, vectorforobject, Quaternion.identity);
+                    ruinObject.SetActive(true);
+                    ruinObject.transform.position = col.gameObject.transform.position;
+
+                    timeRemaining -= 5;
+                    Destroy(col.gameObject);
+                    Debug.Log(currentGuilt);
+                }
+            }
         }
         if (col.gameObject.tag == "win_trig")
         {
             winText.text = "You Won!";
             isEnded = true;
+        }
+
+        if (col.gameObject.tag == "car_trig")
+        {
+            this.shaker.Shake(0.2f);
+            collision_sound.Play();
+            Debug.Log("car collided");
+            Destroy(col.gameObject);
+            currentGuilt++;
         }
 
 
@@ -157,26 +172,35 @@ public class player_movement : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        CheckAndGrow();
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
-        timeRemaining -= Time.deltaTime;
-        if (timeRemaining > 0) {
-            timeText.text = "Time Remaining: " + Mathf.Round(timeRemaining);
-        } else
+        if (isEnded)
         {
-            timeText.text = "Time Remaining: " + 0;
+            anim.SetBool("is_walking", false);
         }
-        
-        if (currentGuilt >= maxGuilt || timeRemaining <= 0)
-        {
-            winText.text = "You Lost :(";
-            isEnded = true;
-        }
+
 
         if (!isEnded)
         {
+
+            timeRemaining -= Time.deltaTime;
+            if (timeRemaining > 0)
+            {
+                timeText.text = "Time Remaining: " + Mathf.Round(timeRemaining);
+            }
+            else
+            {
+                timeText.text = "Time Remaining: " + 0;
+            }
+
+            if (currentGuilt >= maxGuilt || timeRemaining <= 0)
+            {
+                winText.text = "You Lost :(";
+                isEnded = true;
+            }
 
             Vector2 movement_vector = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             if (movement_vector != Vector2.zero)
@@ -193,4 +217,9 @@ public class player_movement : MonoBehaviour {
             rbody.MovePosition(rbody.position + movement_vector * Time.deltaTime * speed * 800);
         }
 	}
+    void LateUpdate()
+    {
+
+        GetComponent<SpriteRenderer>().sortingOrder = -(int)(transform.position.y);
+    }
 }

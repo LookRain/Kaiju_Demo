@@ -7,6 +7,7 @@ public class CameraFollow : MonoBehaviour {
     public float m_speed = 0.1f;
     Camera mycam;
 	// Use this for initialization
+
 	void Start () {
         mycam = GetComponent<Camera>();
 
@@ -21,4 +22,6 @@ public class CameraFollow : MonoBehaviour {
 
         }
 	}
+
+
 }

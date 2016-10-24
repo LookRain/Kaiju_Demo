@@ -66,12 +66,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\CamearShake.cs" />
     <Compile Include="Assets\Tiled2Unity\Scripts\Runtime\ImportBehaviour.cs" />
     <Compile Include="Assets\Tiled2Unity\Scripts\Runtime\SortingLayerExposed.cs" />
     <Compile Include="Assets\Tiled2Unity\Scripts\Runtime\SpriteDepthInMap.cs" />
     <Compile Include="Assets\Tiled2Unity\Scripts\Runtime\TileAnimator.cs" />
     <Compile Include="Assets\Tiled2Unity\Scripts\Runtime\TiledInitialShaderProperties.cs" />
     <Compile Include="Assets\Tiled2Unity\Scripts\Runtime\TiledMap.cs" />
+    <Compile Include="Assets\blink_building.cs" />
+    <Compile Include="Assets\building_sort_layer.cs" />
+    <Compile Include="Assets\car_movement.cs" />
     <Compile Include="Assets\scripts\CameraFollow.cs" />
     <Compile Include="Assets\scripts\player_movement.cs" />
   </ItemGroup>
