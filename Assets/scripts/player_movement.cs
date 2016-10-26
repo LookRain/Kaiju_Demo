@@ -132,7 +132,7 @@ public class player_movement : MonoBehaviour {
         {
             this.shaker.Shake(0.5f);
             collision_sound.Play();
-            for (int i = 0; i < 20; i++)
+			for (int i = 0; i < triggerList.Length; i++)
             {
                 if (col.gameObject.tag == triggerList[i])
                 {
